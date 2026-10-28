@@ -491,6 +491,22 @@ function stopRecording() {
 function looksLikeRussianGarbage(text) {
   var t = (text || "").trim();
   if (!t) return false;
+
+  /* Known Whisper subtitle-credit hallucinations (all-Cyrillic — old heuristic missed them) */
+  if (/редактор\s+субтитров/i.test(t)) return true;
+  if (/корректор\s+а\./i.test(t)) return true;
+  if (/синецк/i.test(t) && /ег[оа]ров/i.test(t)) return true;
+  if (/субтитров\s+а\.?\s*синецк/i.test(t)) return true;
+
+  /* Heavy exact-phrase repetition: same 20+ char chunk appears twice */
+  var norm = t.replace(/\s+/g, " ");
+  if (norm.length >= 40) {
+    for (var i = 0; i + 40 <= norm.length; i++) {
+      var chunk = norm.slice(i, i + 20);
+      if (norm.indexOf(chunk, i + 20) !== -1) return true;
+    }
+  }
+
   var cyr = (t.match(/[\u0400-\u04FF]/g) || []).join("").length;
   var cjk = (t.match(/[\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]/g) || []).join("").length;
   var latin = (t.match(/[A-Za-z]/g) || []).join("").length;
@@ -508,6 +524,7 @@ function looksLikeRussianGarbage(text) {
 function appendTranscript(text) {
   text = (text || "").trim();
   if (!text) return;
+  if (looksLikeRussianGarbage(text)) return;
   var cur = (els.visitText.value || "").replace(/\s+$/, "");
   if (cur) {
     els.visitText.value = cur + " " + text;
@@ -893,12 +910,61 @@ function setupPwaInstall() {
   if (els.installManual) els.installManual.hidden = true;
 }
 
+var PANEL_ASSET_VERSION = "3";
+var PANEL_CACHE_PREFIX = "vethelp-panel-";
+
+function purgeStalePanelCaches() {
+  if (!("caches" in window)) return Promise.resolve();
+  return caches.keys().then(function (keys) {
+    return Promise.all(
+      keys.map(function (key) {
+        if (key.indexOf(PANEL_CACHE_PREFIX) === 0 && key !== PANEL_CACHE_PREFIX + "v" + PANEL_ASSET_VERSION) {
+          return caches.delete(key);
+        }
+      })
+    );
+  }).catch(function () {
+    /* ignore */
+  });
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("./sw.js").catch(function () {
-      /* SW optional for local file://; needed on HTTPS for installability */
-    });
+    /* One-time: drop old vethelp-panel-* caches when page asset version bumped */
+    try {
+      var seen = localStorage.getItem("vethelp-panel-asset-v");
+      if (seen !== PANEL_ASSET_VERSION) {
+        purgeStalePanelCaches().then(function () {
+          try {
+            localStorage.setItem("vethelp-panel-asset-v", PANEL_ASSET_VERSION);
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      }
+    } catch (e) {
+      purgeStalePanelCaches();
+    }
+
+    navigator.serviceWorker
+      .register("./sw.js")
+      .then(function (registration) {
+        /* Force check for updated SW (fixes stale cache-first SW on doctors' machines) */
+        if (registration && typeof registration.update === "function") {
+          registration.update().catch(function () {});
+        }
+        if (registration && registration.waiting) {
+          try {
+            registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      })
+      .catch(function () {
+        /* SW optional for local file://; needed on HTTPS for installability */
+      });
   });
 }
 

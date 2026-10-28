@@ -1,8 +1,9 @@
 /**
  * Minimal service worker for Chromium / Yandex Browser PWA installability.
- * Caches shell assets; network-first for navigation so panel updates stick.
+ * Network-first for ALL same-origin GETs so panel updates stick (v3).
+ * Precache is offline fallback only after network fails.
  */
-var CACHE = "vethelp-panel-v2";
+var CACHE = "vethelp-panel-v3";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -48,39 +49,26 @@ self.addEventListener("fetch", function (event) {
   /* Don't cache CDN / Hugging Face model traffic */
   if (url.origin !== self.location.origin) return;
 
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then(function (res) {
+  /* Network-first for every same-origin GET (navigate + assets) */
+  event.respondWith(
+    fetch(req)
+      .then(function (res) {
+        if (res && res.ok) {
           var copy = res.clone();
           caches.open(CACHE).then(function (c) {
             c.put(req, copy);
           });
-          return res;
-        })
-        .catch(function () {
-          return caches.match("./index.html");
-        })
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(req).then(function (cached) {
-      var network = fetch(req)
-        .then(function (res) {
-          if (res && res.ok) {
-            var copy = res.clone();
-            caches.open(CACHE).then(function (c) {
-              c.put(req, copy);
-            });
+        }
+        return res;
+      })
+      .catch(function () {
+        return caches.match(req).then(function (cached) {
+          if (cached) return cached;
+          if (req.mode === "navigate") {
+            return caches.match("./index.html");
           }
-          return res;
-        })
-        .catch(function () {
-          return cached;
+          return undefined;
         });
-      return cached || network;
-    })
+      })
   );
 });

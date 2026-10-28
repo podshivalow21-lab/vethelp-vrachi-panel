@@ -8,11 +8,11 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Ветхэлп врач" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="manifest" href="manifest.webmanifest?v=3" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <title>Помощник врача · Ветхэлп</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <!-- Экран входа (общий пароль для врачей) -->
@@ -51,7 +51,7 @@
     </header>
 
     <!-- Установка PWA (отдельно от «Старт записи») -->
-    <section class="card card-install" id="install-card" hidden>
+    <section class="card card-install" id="install-card">
       <h2 id="install-title">Приложение на рабочий стол</h2>
       <p class="install-hint" id="install-hint">
         Установите ярлык, чтобы открывать панель без адресной строки.
@@ -159,6 +159,6 @@
     </p>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
