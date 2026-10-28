@@ -50,6 +50,9 @@ var els = {
   visitText: document.getElementById("visit-text"),
   btnDraft: document.getElementById("btn-draft"),
   btnCopyAll: document.getElementById("btn-copy-all"),
+  installCard: document.getElementById("install-card"),
+  btnInstall: document.getElementById("btn-install"),
+  installManual: document.getElementById("install-manual"),
 };
 
 var mediaStream = null;
@@ -59,6 +62,12 @@ var chosenMime = "";
 var isRecording = false;
 var isTranscribing = false;
 var panelReady = false;
+
+/* PWA install: hide «Установить» forever after first install on this device/browser */
+var PWA_INSTALLED_KEY = "vethelp-panel-pwa-installed";
+/** @type {null | Event} */
+var deferredInstallPrompt = null;
+var installUiReady = false;
 
 /** @type {null | ((audio: Float32Array, opts?: object) => Promise<{text?: string}>)} */
 var whisperPipeline = null;
@@ -89,6 +98,9 @@ function showPanel() {
     panelReady = true;
     setupSpeech();
     wirePanel();
+    setupPwaInstall();
+  } else {
+    refreshInstallUi();
   }
 }
 
@@ -751,6 +763,140 @@ function toggleRecording() {
   else startRecording();
 }
 
+/* ---------- PWA install («Установить» ≠ «Старт») ---------- */
+function isRunningStandalone() {
+  try {
+    if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
+      return true;
+    }
+    if (window.matchMedia && window.matchMedia("(display-mode: window-controls-overlay)").matches) {
+      return true;
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  if (typeof navigator !== "undefined" && navigator.standalone === true) {
+    return true;
+  }
+  return false;
+}
+
+function wasInstalledFlag() {
+  try {
+    return localStorage.getItem(PWA_INSTALLED_KEY) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+function markInstalled() {
+  try {
+    localStorage.setItem(PWA_INSTALLED_KEY, "1");
+  } catch (e) {
+    /* private mode — hide for this session anyway */
+  }
+  deferredInstallPrompt = null;
+  hideInstallUi();
+}
+
+function hideInstallUi() {
+  if (els.installCard) els.installCard.hidden = true;
+  if (els.btnInstall) els.btnInstall.hidden = true;
+  if (els.installManual) els.installManual.hidden = true;
+}
+
+function shouldHideInstallForever() {
+  return isRunningStandalone() || wasInstalledFlag();
+}
+
+function refreshInstallUi() {
+  if (shouldHideInstallForever()) {
+    hideInstallUi();
+    return;
+  }
+  if (!els.installCard) return;
+  els.installCard.hidden = false;
+  if (deferredInstallPrompt) {
+    if (els.btnInstall) els.btnInstall.hidden = false;
+    if (els.installManual) els.installManual.hidden = true;
+  } else {
+    /* No Chromium install prompt (yet): do not leave a dead button */
+    if (els.btnInstall) els.btnInstall.hidden = true;
+    if (els.installManual) els.installManual.hidden = false;
+  }
+}
+
+function onInstallClick() {
+  var ev = deferredInstallPrompt;
+  if (!ev) {
+    refreshInstallUi();
+    return;
+  }
+  deferredInstallPrompt = null;
+  if (els.btnInstall) els.btnInstall.disabled = true;
+  Promise.resolve(ev.prompt())
+    .then(function () {
+      return ev.userChoice;
+    })
+    .then(function (choice) {
+      if (choice && choice.outcome === "accepted") {
+        markInstalled();
+      } else {
+        /* User dismissed — keep UI so they can try again when prompt returns */
+        refreshInstallUi();
+      }
+    })
+    .catch(function () {
+      refreshInstallUi();
+    })
+    .then(function () {
+      if (els.btnInstall) els.btnInstall.disabled = false;
+    });
+}
+
+function setupPwaInstall() {
+  if (installUiReady) {
+    refreshInstallUi();
+    return;
+  }
+  installUiReady = true;
+
+  if (els.btnInstall) {
+    els.btnInstall.addEventListener("click", onInstallClick);
+  }
+
+  if (shouldHideInstallForever()) {
+    hideInstallUi();
+    return;
+  }
+
+  /* Show card; real button only when deferred prompt exists, else manual tip later */
+  refreshInstallUi();
+  if (els.installCard && !deferredInstallPrompt) {
+    els.installCard.hidden = false;
+    if (els.btnInstall) els.btnInstall.hidden = true;
+    if (els.installManual) els.installManual.hidden = true;
+  }
+
+  /* If Chromium never fires beforeinstallprompt, show menu tip (not a dead button) */
+  setTimeout(function () {
+    if (shouldHideInstallForever()) {
+      hideInstallUi();
+      return;
+    }
+    refreshInstallUi();
+  }, 2500);
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function () {
+      /* SW optional for local file://; needed on HTTPS for installability */
+    });
+  });
+}
+
 /* ---------- Wire panel ---------- */
 function onBuildDraft() {
   var text = (els.visitText.value || "").trim();
@@ -784,6 +930,22 @@ function wirePanel() {
 }
 
 function init() {
+  registerServiceWorker();
+  /* Early: if already installed PWA, never flash the install card after login */
+  if (shouldHideInstallForever()) {
+    hideInstallUi();
+  }
+  window.addEventListener("beforeinstallprompt", function (e) {
+    /* Capture even before login so prompt is not lost */
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (panelReady && !shouldHideInstallForever()) {
+      refreshInstallUi();
+    }
+  });
+  window.addEventListener("appinstalled", function () {
+    markInstalled();
+  });
   els.loginForm.addEventListener("submit", onLogin);
   if (isAuthed()) {
     showPanel();

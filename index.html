@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#2a7a5a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Ветхэлп врач" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <title>Помощник врача · Ветхэлп</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -43,11 +50,27 @@
       <p class="hint">Откройте рядом с Vet.AF · лучше в Яндекс.Браузере</p>
     </header>
 
+    <!-- Установка PWA (отдельно от «Старт» записи) -->
+    <section class="card card-install" id="install-card" hidden>
+      <h2 id="install-title">Приложение</h2>
+      <p class="install-hint" id="install-hint">
+        На рабочий стол / в приложения — чтобы открывать панель без адресной строки.
+        Это не запись: запись начинается кнопкой «Старт» ниже.
+      </p>
+      <button type="button" class="btn btn-install" id="btn-install" hidden>
+        Установить
+      </button>
+      <p class="install-manual" id="install-manual" hidden role="note">
+        В меню браузера: Установить приложение / На экран Домой
+      </p>
+    </section>
+
     <section class="card" aria-labelledby="rec-title">
       <h2 id="rec-title">Запись</h2>
       <p class="tip" id="speech-tip">
-        Бесплатная расшифровка прямо в браузере (Whisper). Первый раз подождите загрузку модели (~75–80 МБ) — дальше быстрее.
-        Интернет нужен только чтобы скачать модель один раз. Лучше Яндекс.Браузер.
+        «Старт» — только запись приёма (микрофон), не установка. Бесплатная расшифровка в браузере (Whisper).
+        Первый раз подождите загрузку модели (~75–80 МБ) — дальше быстрее. Интернет нужен только чтобы скачать модель один раз.
+        Лучше Яндекс.Браузер. Установка на рабочий стол — отдельная кнопка «Установить» выше.
       </p>
       <div class="record-row">
         <button type="button" class="btn btn-record" id="btn-record" aria-pressed="false">

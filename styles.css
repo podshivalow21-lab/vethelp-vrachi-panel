@@ -387,3 +387,38 @@ textarea.draft-field {
 .record-status.is-loading .pulse {
   background: var(--accent);
 }
+
+/* PWA install (separate from recording «Старт») */
+.card-install {
+  border-color: #b8d9c8;
+  background: #f7fbf8;
+}
+
+.install-hint {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.btn-install {
+  width: 100%;
+  background: #1e5f46;
+  color: #fff;
+  border: 2px solid #164a36;
+}
+
+.btn-install:hover:not(:disabled) {
+  background: #164a36;
+}
+
+.install-manual {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #3a4f44;
+  background: #eef4f0;
+  border: 1px dashed #b8d9c8;
+  border-radius: 8px;
+}
