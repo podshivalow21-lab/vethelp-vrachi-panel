@@ -388,10 +388,10 @@ textarea.draft-field {
   background: var(--accent);
 }
 
-/* PWA install (separate from recording «Старт») */
+/* PWA install (separate from recording «Старт записи») */
 .card-install {
-  border-color: #b8d9c8;
-  background: #f7fbf8;
+  border-color: #8fc4a8;
+  background: #f0f8f4;
 }
 
 .install-hint {
@@ -403,22 +403,35 @@ textarea.draft-field {
 
 .btn-install {
   width: 100%;
-  background: #1e5f46;
+  background: var(--primary, #2a7a5a);
   color: #fff;
-  border: 2px solid #164a36;
+  border: 2px solid #1e5f46;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 16px;
+  box-shadow: 0 2px 0 #164a36;
 }
 
 .btn-install:hover:not(:disabled) {
-  background: #164a36;
+  background: #1e5f46;
+}
+
+.btn-install:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .install-manual {
-  margin: 0;
-  padding: 10px 12px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
   font-size: 0.85rem;
-  line-height: 1.45;
-  color: #3a4f44;
-  background: #eef4f0;
-  border: 1px dashed #b8d9c8;
+  line-height: 1.5;
+  color: #2c3e35;
+  background: #fff;
+  border: 1px solid #b8d9c8;
   border-radius: 8px;
+}
+
+.install-manual strong {
+  color: #1e5f46;
 }

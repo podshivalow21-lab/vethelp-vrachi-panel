@@ -30,7 +30,7 @@ https://vethelp-vrachi-panel.storage.yandexcloud.net/index.html
 
 ## Запись голоса (бесплатно, локально)
 
-1. **Старт** → `getUserMedia` + `MediaRecorder` (как раньше).
+1. **Старт записи** → `getUserMedia` + `MediaRecorder` (как раньше).
 2. **Стоп** → аудио декодируется в PCM 16 kHz mono на клиенте.
 3. Расшифровка **локально в браузере** через [Transformers.js](https://huggingface.co/docs/transformers.js) (`@huggingface/transformers` с CDN) и модель **`Xenova/whisper-base`** (multilingual, лучше русский; WASM `q8`, WebGPU без `q8`).
 4. Текст дописывается в «Текст приёма» (`#visit-text`).
@@ -69,16 +69,15 @@ python3 -m http.server 8765
 
 ## Установка как приложение (PWA)
 
-На панели после входа — кнопка **«Установить»** (не путать со **«Старт»** записи). Подсказка: «На рабочий стол / в приложения».
+На панели после входа **всегда** видна кнопка **«Установить на рабочий стол»** (не путать со **«Старт записи»**).
 
-- Chromium / Яндекс.Браузер: `beforeinstallprompt` → кнопка вызывает системный диалог.
-- После успешной установки (`appinstalled`, режим `standalone` или флаг в `localStorage`) кнопка **больше не показывается** на этом устройстве/браузере.
-- Если браузер не умеет `beforeinstallprompt` (Safari и т.п.): вместо мёртвой кнопки — строка «В меню браузера: Установить приложение / На экран Домой».
-- Нужны HTTPS (бакет / GitHub Pages) или localhost, `manifest.webmanifest` и `sw.js`.
+- Chromium / Яндекс.Браузер: если есть `beforeinstallprompt` → кнопка вызывает системный диалог; при принятии карточка скрывается навсегда (`localStorage` / `standalone`).
+- Если нативного prompt нет: клик **не no-op** — раскрывает пошаговую подсказку (меню ⋮ → «Установить приложение» / «Установить Ветхэлп»).
+- Нужны HTTPS (GitHub Pages / бакет) или localhost, `manifest.webmanifest` и `sw.js`.
 
 ## Файлы
 
-- `index.html` — разметка (`script type="module"`), манифест, блок «Установить»
+- `index.html` — разметка (`script type="module"`), манифест, блок «Установить на рабочий стол»
 - `styles.css` — узкая светлая тема
 - `app.js` — пароль, MediaRecorder, клиентский Whisper, черновик, буфер обмена, PWA-установка
   - `PANEL_PASSWORD` — не менять без согласования

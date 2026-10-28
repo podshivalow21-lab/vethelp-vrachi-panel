@@ -2,7 +2,7 @@
  * Minimal service worker for Chromium / Yandex Browser PWA installability.
  * Caches shell assets; network-first for navigation so panel updates stick.
  */
-var CACHE = "vethelp-panel-v1";
+var CACHE = "vethelp-panel-v2";
 var PRECACHE = [
   "./",
   "./index.html",

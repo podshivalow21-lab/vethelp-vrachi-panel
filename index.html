@@ -50,32 +50,35 @@
       <p class="hint">Откройте рядом с Vet.AF · лучше в Яндекс.Браузере</p>
     </header>
 
-    <!-- Установка PWA (отдельно от «Старт» записи) -->
+    <!-- Установка PWA (отдельно от «Старт записи») -->
     <section class="card card-install" id="install-card" hidden>
-      <h2 id="install-title">Приложение</h2>
+      <h2 id="install-title">Приложение на рабочий стол</h2>
       <p class="install-hint" id="install-hint">
-        На рабочий стол / в приложения — чтобы открывать панель без адресной строки.
-        Это не запись: запись начинается кнопкой «Старт» ниже.
+        Установите ярлык, чтобы открывать панель без адресной строки.
+        Это не запись приёма: микрофон включается только кнопкой «Старт записи» ниже.
       </p>
-      <button type="button" class="btn btn-install" id="btn-install" hidden>
-        Установить
+      <button type="button" class="btn btn-install btn-primary" id="btn-install">
+        Установить на рабочий стол
       </button>
       <p class="install-manual" id="install-manual" hidden role="note">
-        В меню браузера: Установить приложение / На экран Домой
+        <strong>Как установить вручную</strong><br />
+        1) Яндекс.Браузер: меню <strong>⋮</strong> (справа вверху) → «Установить приложение» или «Установить Ветхэлп».<br />
+        2) Google Chrome: меню <strong>⋮</strong> → «Установить приложение» (или значок ⊕ в адресной строке).<br />
+        После установки откройте ярлык с рабочего стола. Кнопка «Старт записи» ниже — только микрофон, не установка.
       </p>
     </section>
 
     <section class="card" aria-labelledby="rec-title">
       <h2 id="rec-title">Запись</h2>
       <p class="tip" id="speech-tip">
-        «Старт» — только запись приёма (микрофон), не установка. Бесплатная расшифровка в браузере (Whisper).
+        «Старт записи» — только микрофон и расшифровка приёма (Whisper), не установка приложения.
         Первый раз подождите загрузку модели (~75–80 МБ) — дальше быстрее. Интернет нужен только чтобы скачать модель один раз.
-        Лучше Яндекс.Браузер. Установка на рабочий стол — отдельная кнопка «Установить» выше.
+        Лучше Яндекс.Браузер. Установка на рабочий стол — зелёная кнопка «Установить на рабочий стол» выше.
       </p>
       <div class="record-row">
         <button type="button" class="btn btn-record" id="btn-record" aria-pressed="false">
           <span class="mic-icon" aria-hidden="true"></span>
-          <span id="btn-record-label">Старт</span>
+          <span id="btn-record-label">Старт записи</span>
         </button>
         <div class="record-status" id="record-status" role="status">
           <span class="pulse" aria-hidden="true"></span>

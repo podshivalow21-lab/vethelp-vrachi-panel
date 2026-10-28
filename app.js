@@ -301,7 +301,7 @@ function setRecordButtonIdle() {
   els.btnRecord.classList.remove("is-recording", "is-busy");
   els.btnRecord.setAttribute("aria-pressed", "false");
   els.btnRecord.disabled = false;
-  els.btnRecordLabel.textContent = "Старт";
+  els.btnRecordLabel.textContent = "Старт записи";
 }
 
 /* ---------- Capability checks ---------- */
@@ -676,7 +676,7 @@ function transcribeBlob(blob) {
   isTranscribing = true;
   els.btnRecord.disabled = true;
   els.btnRecord.classList.add("is-busy");
-  els.btnRecordLabel.textContent = "Старт";
+  els.btnRecordLabel.textContent = "Старт записи";
   setStatus("loading", "Загружаю модель…");
   hideFallback();
 
@@ -711,14 +711,14 @@ function transcribeBlob(blob) {
       text = (text || "").trim();
       if (!text) {
         showFallback(
-          "Речь не распознана. Говорите чуть громче и ближе к микрофону, затем снова нажмите «Старт»."
+          "Речь не распознана. Говорите чуть громче и ближе к микрофону, затем снова нажмите «Старт записи»."
         );
         return;
       }
       if (looksLikeRussianGarbage(text)) {
         /* Не дописываем gibberish — textarea остаётся как была. */
         showFallback(
-          "Не удалось нормально распознать речь. Подойдите ближе к микрофону, говорите чётче и нажмите «Старт» ещё раз."
+          "Не удалось нормально распознать речь. Подойдите ближе к микрофону, говорите чётче и нажмите «Старт записи» ещё раз."
         );
         return;
       }
@@ -763,7 +763,7 @@ function toggleRecording() {
   else startRecording();
 }
 
-/* ---------- PWA install («Установить» ≠ «Старт») ---------- */
+/* ---------- PWA install («Установить на рабочий стол» ≠ «Старт записи») ---------- */
 function isRunningStandalone() {
   try {
     if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
@@ -809,27 +809,41 @@ function shouldHideInstallForever() {
   return isRunningStandalone() || wasInstalledFlag();
 }
 
+function showInstallButtonAlways() {
+  if (!els.installCard || !els.btnInstall) return;
+  els.installCard.hidden = false;
+  els.btnInstall.hidden = false;
+  els.btnInstall.disabled = false;
+}
+
 function refreshInstallUi() {
   if (shouldHideInstallForever()) {
     hideInstallUi();
     return;
   }
-  if (!els.installCard) return;
-  els.installCard.hidden = false;
-  if (deferredInstallPrompt) {
-    if (els.btnInstall) els.btnInstall.hidden = false;
-    if (els.installManual) els.installManual.hidden = true;
-  } else {
-    /* No Chromium install prompt (yet): do not leave a dead button */
-    if (els.btnInstall) els.btnInstall.hidden = true;
-    if (els.installManual) els.installManual.hidden = false;
+  showInstallButtonAlways();
+  /* Manual steps stay hidden until click (when no native prompt) or after dismiss */
+  if (els.installManual && deferredInstallPrompt) {
+    els.installManual.hidden = true;
+  }
+}
+
+function revealManualInstallSteps() {
+  if (!els.installManual) return;
+  els.installManual.hidden = false;
+  try {
+    els.installManual.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (e) {
+    /* ignore */
   }
 }
 
 function onInstallClick() {
   var ev = deferredInstallPrompt;
   if (!ev) {
-    refreshInstallUi();
+    /* No beforeinstallprompt — still useful: show Яндекс/Chrome menu steps */
+    showInstallButtonAlways();
+    revealManualInstallSteps();
     return;
   }
   deferredInstallPrompt = null;
@@ -842,15 +856,19 @@ function onInstallClick() {
       if (choice && choice.outcome === "accepted") {
         markInstalled();
       } else {
-        /* User dismissed — keep UI so they can try again when prompt returns */
-        refreshInstallUi();
+        /* Dismissed — keep primary button + show manual fallback */
+        showInstallButtonAlways();
+        revealManualInstallSteps();
       }
     })
     .catch(function () {
-      refreshInstallUi();
+      showInstallButtonAlways();
+      revealManualInstallSteps();
     })
     .then(function () {
-      if (els.btnInstall) els.btnInstall.disabled = false;
+      if (els.btnInstall && !shouldHideInstallForever()) {
+        els.btnInstall.disabled = false;
+      }
     });
 }
 
@@ -870,22 +888,9 @@ function setupPwaInstall() {
     return;
   }
 
-  /* Show card; real button only when deferred prompt exists, else manual tip later */
-  refreshInstallUi();
-  if (els.installCard && !deferredInstallPrompt) {
-    els.installCard.hidden = false;
-    if (els.btnInstall) els.btnInstall.hidden = true;
-    if (els.installManual) els.installManual.hidden = true;
-  }
-
-  /* If Chromium never fires beforeinstallprompt, show menu tip (not a dead button) */
-  setTimeout(function () {
-    if (shouldHideInstallForever()) {
-      hideInstallUi();
-      return;
-    }
-    refreshInstallUi();
-  }, 2500);
+  /* Always show install card + primary button after login (do not wait for beforeinstallprompt) */
+  showInstallButtonAlways();
+  if (els.installManual) els.installManual.hidden = true;
 }
 
 function registerServiceWorker() {
