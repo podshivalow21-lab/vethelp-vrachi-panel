@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>Помощник врача · Ветхэлп</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Экран входа (общий пароль для врачей) -->
+  <div class="app" id="gate">
+    <header class="header">
+      <h1>Помощник врача · Ветхэлп</h1>
+      <p class="hint">Вход для врачей клиники</p>
+    </header>
+    <section class="card" aria-labelledby="login-title">
+      <h2 id="login-title">Вход</h2>
+      <form id="login-form" autocomplete="off">
+        <label class="label" for="password">Пароль</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="input"
+          autocomplete="current-password"
+          required
+          autofocus
+        />
+        <p class="login-error" id="login-error" role="alert" hidden></p>
+        <div style="margin-top: 12px">
+          <button type="submit" class="btn btn-primary" id="btn-login">Войти</button>
+        </div>
+      </form>
+    </section>
+    <p class="footer">Черновик для копирования в Vet.AF. Учёт не заменяется.</p>
+  </div>
+
+  <!-- Основная панель (после входа) -->
+  <div class="app" id="panel" hidden>
+    <header class="header">
+      <h1>Помощник врача · Ветхэлп</h1>
+      <p class="hint">Откройте рядом с Vet.AF · лучше в Яндекс.Браузере</p>
+    </header>
+
+    <section class="card" aria-labelledby="rec-title">
+      <h2 id="rec-title">Запись</h2>
+      <p class="tip" id="speech-tip">
+        Бесплатная расшифровка прямо в браузере (Whisper). Первый раз подождите загрузку модели (~75–80 МБ) — дальше быстрее.
+        Интернет нужен только чтобы скачать модель один раз. Лучше Яндекс.Браузер.
+      </p>
+      <div class="record-row">
+        <button type="button" class="btn btn-record" id="btn-record" aria-pressed="false">
+          <span class="mic-icon" aria-hidden="true"></span>
+          <span id="btn-record-label">Старт</span>
+        </button>
+        <div class="record-status" id="record-status" role="status">
+          <span class="pulse" aria-hidden="true"></span>
+          <span id="record-status-text">Идёт запись…</span>
+        </div>
+        <p class="speech-fallback" id="speech-fallback" role="alert"></p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="text-title">
+      <h2 id="text-title">Текст приёма</h2>
+      <label class="label" for="visit-text">Можно править руками</label>
+      <textarea id="visit-text" rows="8" placeholder="Сюда попадёт расшифровка или вставьте текст приёма…"></textarea>
+      <div style="margin-top: 10px">
+        <button type="button" class="btn btn-primary" id="btn-draft">Собрать черновик</button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="draft-title">
+      <h2 id="draft-title">Черновик медкарты</h2>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-complaints">Жалобы / анамнез</label>
+          <button type="button" class="btn btn-copy" id="copy-complaints">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-complaints" rows="3"></textarea>
+      </div>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-exam">Осмотр</label>
+          <button type="button" class="btn btn-copy" id="copy-exam">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-exam" rows="3"></textarea>
+      </div>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-diagnosis">Диагноз (рабочий)</label>
+          <button type="button" class="btn btn-copy" id="copy-diagnosis">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-diagnosis" rows="2"></textarea>
+      </div>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-treatment">Назначения / лечение</label>
+          <button type="button" class="btn btn-copy" id="copy-treatment">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-treatment" rows="3"></textarea>
+      </div>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-advice">Рекомендации владельцу</label>
+          <button type="button" class="btn btn-copy" id="copy-advice">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-advice" rows="3"></textarea>
+      </div>
+
+      <div class="draft-section">
+        <div class="draft-head">
+          <label class="label" for="field-other">Прочее / заметки</label>
+          <button type="button" class="btn btn-copy" id="copy-other">Копировать</button>
+        </div>
+        <textarea class="draft-field" id="field-other" rows="2"></textarea>
+      </div>
+
+      <div class="draft-actions">
+        <button type="button" class="btn btn-secondary" id="btn-copy-all">Копировать всё</button>
+      </div>
+    </section>
+
+    <p class="footer">
+      Черновик для копирования в Vet.AF. Учёт не заменяется.
+      Расшифровка бесплатная и локальная (Whisper в браузере) — аудио на сервер клиники не уходит, текст только в этой вкладке.
+    </p>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
